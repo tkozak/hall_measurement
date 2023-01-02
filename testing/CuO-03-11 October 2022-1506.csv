@@ -1,0 +1,100 @@
+Hall VanderPauw - Raw Data,
+CuO-03 - 11 October 2022,
+,
+
+Exeriment Type:,Curve - Current,
+Current Start:, +1.0000E-08 (A),
+Current Finish:, +3.0000E-08 (A),
+Current Step:, 1.0000E-08 (A),
+Temp Setting:, AMB ~300KK,
+Field Setting:, 14000G,
+Thickness:, 0.22 uM,
+
+
+Four Probes Resistivity Measurement:
+Point #1,Probes Source/Meter, 12 / 43,23 / 14,34 / 21,41 / 32,Temp (K),
+,Current 1(A),+1.0002E-08,+1.0002E-08,+1.0003E-08,+1.0003E-08,AMB
+,Voltage 1(V),++3.1220E-02,++1.6855E-02,++2.8860E-02,++1.7992E-02
+,Current 2(A),-9.9960E-09,-9.9960E-09,-9.9960E-09,-9.9960E-09
+,Voltage 2(V),-3.0290E-02,-1.6378E-02,-3.2380E-02,-1.5869E-02
+,Resistance (Ohms) ,+3.0758E+06,+1.6618E+06,+3.0621E+06,+1.6931E+06
+
+,Ratio       ,+5.4000E-01,+5.4200E-01,+9.9500E-01,+5.5000E-01
+,Form Factor ,0.967,1,1,1
+,Resistivity (Ohms*cm),+2.2844E+02,+2.3551E+02,+3.0601E+02,+2.3776E+02
+
+Hall Measurement:
+Point #1,Probes Source/Meter, 13 / 24,24 / 31,13 / 24,24 / 31,
+,Current 1(A),1.0002E-08,1.0002E-08,1.0002E-08,1.0002E-08
+,Voltage 1(V),-1.5737E-02,+1.3429E-02,-1.5742E-02,+1.3420E-02
+,Current 2(A),-9.9960E-09,-9.9960E-09,-9.9960E-09,-9.9960E-09
+,Voltage 2(V),+1.2717E-02,-1.4990E-02,+1.2779E-02,-1.5007E-02
+,Resistance (Ohms),-1.4228E+06,+1.4210E+06,-1.4261E+06,+1.4214E+06
+,Field (G),+1.4083E+04,,-1.4048E+04
+,Mobility (cm2/Vs), +4.5791E-01
+,Density (cm-3), +5.4108E+16
+,Hall Coeff. (cm-3/coul), +1.1536E+02
+,Sheet # (cm-2),+1.1903E+12
+,Sheet Res.(ohm/cm2),+1.1451E+07
+,Carrier Type,Holes
+
+
+Four Probes Resistivity Measurement:
+Point #2,Probes Source/Meter, 12 / 43,23 / 14,34 / 21,41 / 32,Temp (K),
+,Current 1(A),+1.9999E-08,+1.9998E-08,+1.9998E-08,+1.9999E-08,AMB
+,Voltage 1(V),++6.1740E-02,++3.3470E-02,++5.9460E-02,++3.4680E-02
+,Current 2(A),-1.9992E-08,-1.9993E-08,-1.9992E-08,-1.9992E-08
+,Voltage 2(V),-6.0660E-02,-3.2990E-02,-6.2840E-02,-3.3020E-02
+,Resistance (Ohms) ,+3.0606E+06,+1.6618E+06,+3.0582E+06,+1.6928E+06
+
+,Ratio       ,+5.4200E-01,+5.4300E-01,+9.9900E-01,+5.5300E-01
+,Form Factor ,0.967,1,1,1
+,Resistivity (Ohms*cm),+2.2782E+02,+2.3532E+02,+3.0506E+02,+2.3699E+02
+
+Hall Measurement:
+Point #2,Probes Source/Meter, 13 / 24,24 / 31,13 / 24,24 / 31,
+,Current 1(A),1.9999E-08,1.9999E-08,1.9998E-08,1.9998E-08
+,Voltage 1(V),-2.9760E-02,+2.7310E-02,-2.9750E-02,+2.7290E-02
+,Current 2(A),-1.9992E-08,-1.9992E-08,-1.9993E-08,-1.9992E-08
+,Voltage 2(V),+2.6840E-02,-2.9530E-02,+2.6940E-02,-2.9540E-02
+,Resistance (Ohms),-1.4153E+06,+1.4213E+06,-1.4175E+06,+1.4211E+06
+,Field (G),+1.4096E+04,,-1.4060E+04
+,Mobility (cm2/Vs), +3.8321E-01
+,Density (cm-3), +6.4817E+16
+,Hall Coeff. (cm-3/coul), +9.6303E+01
+,Sheet # (cm-2),+1.4259E+12
+,Sheet Res.(ohm/cm2),+1.1422E+07
+,Carrier Type,Holes
+
+
+Four Probes Resistivity Measurement:
+Point #3,Probes Source/Meter, 12 / 43,23 / 14,34 / 21,41 / 32,Temp (K),
+,Current 1(A),+3.0050E-08,+3.0050E-08,+3.0060E-08,+3.0050E-08,AMB
+,Voltage 1(V),++9.2590E-02,++5.0180E-02,++9.0230E-02,++5.1460E-02
+,Current 2(A),-2.9990E-08,-2.9990E-08,-2.9990E-08,-2.9990E-08
+,Voltage 2(V),-9.1040E-02,-4.9700E-02,-9.3360E-02,-5.0070E-02
+,Resistance (Ohms) ,+3.0584E+06,+1.6635E+06,+3.0572E+06,+1.6910E+06
+
+,Ratio       ,+5.4300E-01,+5.4400E-01,+9.9900E-01,+5.5200E-01
+,Form Factor ,0.967,1,1,1
+,Resistivity (Ohms*cm),+2.2784E+02,+2.3536E+02,+3.0490E+02,+2.3679E+02
+
+Hall Measurement:
+Point #3,Probes Source/Meter, 13 / 24,24 / 31,13 / 24,24 / 31,
+,Current 1(A),3.0060E-08,3.0050E-08,3.0050E-08,3.0050E-08
+,Voltage 1(V),-4.3710E-02,+4.1360E-02,-4.3790E-02,+4.1330E-02
+,Current 2(A),-2.9980E-08,-2.9990E-08,-2.9990E-08,-2.9990E-08
+,Voltage 2(V),+4.0540E-02,-4.3960E-02,+4.0740E-02,-4.3990E-02
+,Resistance (Ohms),-1.4032E+06,+1.4210E+06,-1.4078E+06,+1.4210E+06
+,Field (G),+1.4052E+04,,-1.4054E+04
+,Mobility (cm2/Vs), +7.2651E-01
+,Density (cm-3), +3.4200E+16
+,Hall Coeff. (cm-3/coul), +1.8252E+02
+,Sheet # (cm-2),+7.5240E+11
+,Sheet Res.(ohm/cm2),+1.1419E+07
+,Carrier Type,Holes
+
+
+,Number of Points:,3
+
+,NOTE:, To maintain precision format all cells to 'Scientific' 4(d.p)
