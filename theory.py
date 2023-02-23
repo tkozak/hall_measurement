@@ -16,3 +16,10 @@ def sheet_resistance_vdp(ra, rb, ra_s=0, rb_s=0):
     rs = opt.newton(vdp_function, r0, fprime=vdp_function_prime, args=(ra, rb))
     return rs, rs_s0
 
+
+def hall_coefficient(db, dr, dr_s):
+    return dr/db, dr_s/db
+
+
+def density_mobility_majority(rs, rh, thickness):
+

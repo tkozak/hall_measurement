@@ -57,19 +57,38 @@ def load_csv_file(filename):
 
 
 def process_data(data):
+    data['vdp_dc_offset'] = []
+    data['hall_dc_offset'] = []
+    data['rs'] = []
+    data['rh'] = []
     for k in range(0, len(data['setpoint'])):
+
         i = data['vdp'][k]['current']
         u = data['vdp'][k]['voltage']
-        r = u/i
         rc = np.squeeze(np.diff(u, axis=0)/np.diff(i, axis=0))   # resistance without dc offset
-        data['dc_offset'] = u[1, :] - rc * i[1, :]  # save dc offset
+        data['vdp_dc_offset'].append(u[1, :] - rc * i[1, :]) # save dc offset
+
         rc_s = 0.02*rc   # estimate error as 2% of the calculated resistance value
+
         ra = 0.5 * (rc[0] + rc[1])   # ra
         ra_s = 0.5 * np.sqrt(rc_s[0]**2 + rc_s[1]**2)
         rb = 0.5 * (rc[2] + rc[3])
         rb_s = 0.5 * np.sqrt(rc_s[2]**2 + rc_s[3]**2)
         rs, rs_s = theory.sheet_resistance_vdp(ra, rb, ra_s, rb_s)
-        rho = rs*data['thickness']*100
-        print(f'{ra:.2e}, {rb:.2e}, {rho:.2e}')
+        data['rs'].append((rs, rs_s))
+
+        i = data['hall'][k]['current']
+        u = data['hall'][k]['voltage']
+        b = data['hall'][k]['field']
+        rc = np.squeeze(np.diff(u, axis=0) / np.diff(i, axis=0))  # resistance without dc offset
+        data['hall_dc_offset'].append(u[1, :] - rc * i[1, :])  # save dc offset
+
+        rc_s = 0.0002 * rc  # ???
+
+        dr = np.array([rc[0] - rc[1], rc[2] - rc[3]])
+        dr_s = np.array([np.sqrt(rc_s[0]**2 + rc_s[1]**2), np.sqrt(rc_s[2]**2 + rc_s[3]**2)])
+        db = (b[0] - b[1])*1e-4
+        rh, rh_s = theory.hall_coefficient(db, dr, dr_s)
+        data['rh'].append((0.5 * (rh[0] + rh[1]), 0.5*np.sqrt(rh_s[0]**2 + rh_s[1]**2)))
 
     return data
