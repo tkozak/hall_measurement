@@ -33,10 +33,9 @@ def sheet_resistance_vdp(ra, rb, delta=5e-4):
     return 1/zi
 
 
-
-def hall_coefficient(db, dr, dr_s):
-    return dr/db, dr_s/db
+def hall_coefficient(dr, db):
+    return dr/db
 
 
 def density_mobility_majority(rs, rh, thickness):
-
+    pass

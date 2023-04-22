@@ -84,12 +84,13 @@ def process_data(data):
         rc = np.squeeze(np.diff(u, axis=0) / np.diff(i, axis=0))  # resistance without dc offset
         data['hall_dc_offset'].append(u[1, :] - rc * i[1, :])  # save dc offset
 
-        rc_s = 0.0002 * rc  # ???
-
-        dr = np.array([rc[0] - rc[1], rc[2] - rc[3]])
-        dr_s = np.array([np.sqrt(rc_s[0] ** 2 + rc_s[1] ** 2), np.sqrt(rc_s[2] ** 2 + rc_s[3] ** 2)])
-        db = (b[0] - b[1]) * 1e-4
-        rh, rh_s = theory.hall_coefficient(db, dr, dr_s)
-        data['rh'].append((0.5 * (rh[0] + rh[1]), 0.5 * np.sqrt(rh_s[0] ** 2 + rh_s[1] ** 2)))
+        rc = unumpy.uarray(rc, 0.0002*np.abs(rc))   # estimate error as 0.02% of the calculated resistance value (???)
+        b = unumpy.uarray(b, 100)   # estimate error as 100 Gauss (??)
+        dra = rc[0] - rc[1]
+        drb = rc[2] - rc[3]
+        dr = 0.5*(dra + drb)
+        db = (b[0] - b[1]) * 1e-4   # change in magnetic field (T)
+        rh = theory.hall_coefficient(dr, db)
+        data['rh'].append(rh)
 
     return data
