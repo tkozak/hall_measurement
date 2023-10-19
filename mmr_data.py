@@ -1,7 +1,6 @@
 import re
 import numpy as np
-
-import theory
+import hall_data
 
 
 def sig_round(x, p): return float(f'{x:.{p - 1}e}')
@@ -19,17 +18,20 @@ def read_current_voltage_columns(lines):
 def load_csv_file(filename):
     with open(filename, 'r') as f:
         lines = f.readlines()
-    data = {'title': lines[1].split(',')[0], 'setpoint': [], 'vdp': [], 'hall': []}
+    title = lines[1].split(',')[0]
+    sp = []
+    vd = []
+    hd = []
     i = 2
     while i < len(lines):
         if re.match('Thickness', lines[i]):
             t_str = lines[i].split(',')[1]
-            data['thickness'] = float(t_str[:-2]) * 1e-6
+            th = float(t_str[:-2]) * 1e-6  # thickness
         if re.match('Point #', lines[i]) and re.match('Hall', lines[i - 1]):
             current, voltage = read_current_voltage_columns(lines[i + 1: i + 5])
             field_str_list = lines[i+6].split(',')
             field = np.array([float(field_str_list[2]), float(field_str_list[4])])
-            data['hall'].append({'current': current,
+            hd.append({'current': current,
                                  'voltage': voltage,
                                  'field': field})
             i += 12
@@ -45,50 +47,22 @@ def load_csv_file(filename):
                 temp_setpoint = temp_str.strip()
 
             current_setpoint = sig_round(np.mean(-0.5*np.diff(current, axis=0)), 2)
-            data['setpoint'].append({'current': current_setpoint,
-                                     'temp': temp_setpoint})
-            data['vdp'].append({'current': current,
-                                'voltage': voltage})
+            sp.append({'current': current_setpoint, 'temp': temp_setpoint})
+            vd.append({'current': current, 'voltage': voltage})
             i += 8
         if re.match('AVERAGE', lines[i]):
             break
         i += 1
-    return data
 
+    # process data
+    for k in range(0, len(sp)):
+        data = hall_data.VdpData(vd[k]['current'], vd[k]['voltage'])
+        print(data.rs)
 
-def process_data(data):
-    data['vdp_dc_offset'] = []
-    data['hall_dc_offset'] = []
-    data['rs'] = []
-    data['rh'] = []
-    for k in range(0, len(data['setpoint'])):
+        data = hall_data.HallData(hd[k]['current'], hd[k]['voltage'], hd[k]['field'])
+        print(data.rh)
 
-        i = data['vdp'][k]['current']
-        u = data['vdp'][k]['voltage']
-        rc = np.squeeze(np.diff(u, axis=0)/np.diff(i, axis=0))   # resistance without dc offset
-        data['vdp_dc_offset'].append(u[1, :] - rc * i[1, :]) # save dc offset
-
-        rc_s = 0.02*rc   # estimate error as 2% of the calculated resistance value
-
-        ra = 0.5 * (rc[0] + rc[1])   # ra
-        ra_s = 0.5 * np.sqrt(rc_s[0]**2 + rc_s[1]**2)
-        rb = 0.5 * (rc[2] + rc[3])
-        rb_s = 0.5 * np.sqrt(rc_s[2]**2 + rc_s[3]**2)
-        rs, rs_s = theory.sheet_resistance_vdp(ra, rb, ra_s, rb_s)
-        data['rs'].append((rs, rs_s))
-
-        i = data['hall'][k]['current']
-        u = data['hall'][k]['voltage']
-        b = data['hall'][k]['field']
-        rc = np.squeeze(np.diff(u, axis=0) / np.diff(i, axis=0))  # resistance without dc offset
-        data['hall_dc_offset'].append(u[1, :] - rc * i[1, :])  # save dc offset
-
-        rc_s = 0.0002 * rc  # ???
-
-        dr = np.array([rc[0] - rc[1], rc[2] - rc[3]])
-        dr_s = np.array([np.sqrt(rc_s[0]**2 + rc_s[1]**2), np.sqrt(rc_s[2]**2 + rc_s[3]**2)])
-        db = (b[0] - b[1])*1e-4
-        rh, rh_s = theory.hall_coefficient(db, dr, dr_s)
-        data['rh'].append((0.5 * (rh[0] + rh[1]), 0.5*np.sqrt(rh_s[0]**2 + rh_s[1]**2)))
+        #TODO put all together
 
     return data
+

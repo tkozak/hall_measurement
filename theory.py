@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.optimize as opt
+from uncertainties import ufloat
 
 
 def vdp_function(rs, ra, rb):
@@ -10,16 +11,17 @@ def vdp_function_prime(rs, ra, rb):
     return np.pi/rs**2*(ra*np.exp(-np.pi*ra/rs) + rb*np.exp(-np.pi*rb/rs))
 
 
-def sheet_resistance_vdp(ra, rb, ra_s=0, rb_s=0):
+def sheet_resistance_vdp(ra, rb):
     r0 = np.pi * (ra + rb) / (2 * np.log(2))
-    rs_s0 = np.pi/(2 * np.log(2)) * np.sqrt(ra_s**2 + rb_s**2)
-    rs = opt.newton(vdp_function, r0, fprime=vdp_function_prime, args=(ra, rb))
-    return rs, rs_s0
+
+    rs_v = opt.newton(vdp_function, r0.n, fprime=vdp_function_prime, args=(ra.n, rb.n))
+    rs = ufloat(rs_v, r0.s)
+    return rs
 
 
-def hall_coefficient(db, dr, dr_s):
-    return dr/db, dr_s/db
+def hall_coefficient(db, dr):
+    return dr/db
 
 
 def density_mobility_majority(rs, rh, thickness):
-
+    pass
