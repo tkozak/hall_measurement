@@ -59,20 +59,26 @@ def load_csv_file(filename):
 
 def process_data(data):
     data['vdp_dc_offset'] = []
+    data['vdp_reversal_error'] = []
+    data['vdp_reciprocal_error'] = []
+    data['vdp_rab'] = []
     data['hall_dc_offset'] = []
+    data['hall_drab'] = []
     data['rs'] = []
     data['rh'] = []
     for k in range(0, len(data['setpoint'])):
 
         i = data['vdp'][k]['current']
         u = data['vdp'][k]['voltage']
-        # r = u/i
+        r = u/i
         rc = np.squeeze(np.diff(u, axis=0)/np.diff(i, axis=0))   # resistance without dc offset
-        data['vdp_dc_offset'].append(u[1, :] - rc * i[1, :]) # save dc offset
-        # data['reversal_error'] = u[1, :] + u[2, :]
+        data['vdp_dc_offset'].append(u[1, :] - rc * i[1, :])   # save dc offset
+        data['vdp_reversal_error'].append(np.abs(r[0, :]-rc)/rc)
         rc = unumpy.uarray(rc, 0.02*rc)   # estimate error as 2% of the calculated resistance value
         ra = 0.5 * (rc[0] + rc[1])   # ra
         rb = 0.5 * (rc[2] + rc[3])
+        data['vdp_reciprocal_error'].append(np.array([abs(rc[0].n-ra.n)/ra.n, abs(rc[2].n-rb.n)/rb.n]))
+        data['vdp_rab'].append([ra, rb])
         rs = theory.sheet_resistance_vdp(ra, rb)
         data['rs'].append(rs)
         # rho = rs*data['thickness']*100  # convert to Ohm*cm
@@ -88,6 +94,7 @@ def process_data(data):
         b = unumpy.uarray(b, 100)   # estimate error as 100 Gauss (??)
         dra = rc[0] - rc[1]
         drb = rc[2] - rc[3]
+        data['hall_drab'].append([dra, drb])
         dr = 0.5*(dra + drb)
         db = (b[0] - b[1]) * 1e-4   # change in magnetic field (T)
         rh = theory.hall_coefficient(dr, db)
