@@ -3,7 +3,7 @@ import numpy as np
 import hall_data
 
 
-def sig_round(x, p): return float(f'{x:.{p - 1}e}')
+def sig_round(x, p): return float(f'{x: .{p - 1}e}')
 
 
 def read_current_voltage_columns(lines):
@@ -23,6 +23,7 @@ def load_csv_file(filename):
     vd = []
     hd = []
     i = 2
+    th = 0.
     while i < len(lines):
         if re.match('Thickness', lines[i]):
             t_str = lines[i].split(',')[1]
@@ -31,23 +32,21 @@ def load_csv_file(filename):
             current, voltage = read_current_voltage_columns(lines[i + 1: i + 5])
             field_str_list = lines[i+6].split(',')
             field = np.array([float(field_str_list[2]), float(field_str_list[4])])
-            hd.append({'current': current,
-                                 'voltage': voltage,
-                                 'field': field})
+            hd.append({'current': current, 'voltage': voltage, 'field': field})
             i += 12
         if re.search('Current 1', lines[i]) and not re.match('Hall', lines[i - 2]):
             # correct +- and ++ in line 2
-            lines[i + 1] = re.sub('\+\+', '+', lines[i + 1])
-            lines[i + 1] = re.sub('\+-', '-', lines[i + 1])
+            lines[i + 1] = re.sub(r'\+\+', '+', lines[i + 1])
+            lines[i + 1] = re.sub(r'\+-', '-', lines[i + 1])
             current, voltage = read_current_voltage_columns(lines[i: i + 4])
             temp_str = lines[i].split(',')[6]
             try:
-                temp_setpoint = float(temp_str)
+                temp_sp = float(temp_str)
             except ValueError:
-                temp_setpoint = temp_str.strip()
+                temp_sp = temp_str.strip()
 
-            current_setpoint = sig_round(np.mean(-0.5*np.diff(current, axis=0)), 2)
-            sp.append({'current': current_setpoint, 'temp': temp_setpoint})
+            current_sp = sig_round(np.mean(-0.5*np.diff(current, axis=0)), 2)
+            sp.append({'current': current_sp, 'temp': temp_sp})
             vd.append({'current': current, 'voltage': voltage})
             i += 8
         if re.match('AVERAGE', lines[i]):
@@ -55,14 +54,12 @@ def load_csv_file(filename):
         i += 1
 
     # process data
-    for k in range(0, len(sp)):
-        data = hall_data.VdpData(vd[k]['current'], vd[k]['voltage'])
-        print(data.rs)
+    data_list = []
+    for k, set_point in enumerate(sp):
+        data_point = hall_data.DataPoint(set_point['current'], set_point['temp'])
+        data_point.set_thickness(th)
+        data_point.set_vdp(hall_data.VdpData(vd[k]['current'], vd[k]['voltage']))
+        data_point.set_hall(hall_data.HallData(hd[k]['current'], hd[k]['voltage'], hd[k]['field']))
+        data_list.append(data_point)
 
-        data = hall_data.HallData(hd[k]['current'], hd[k]['voltage'], hd[k]['field'])
-        print(data.rh)
-
-        #TODO put all together
-
-    return data
-
+    return data_list

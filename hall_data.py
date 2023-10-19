@@ -2,6 +2,7 @@ import numpy as np
 import theory
 from uncertainties import ufloat
 
+ec = 1.602e-19
 
 class VdpData:
     def __init__(self, current, voltage):
@@ -48,11 +49,50 @@ class HallData:
         db = ufloat((self.b[0] - self.b[1]) * 1e-4, 0.01 * np.sqrt(2))  # estimate error as 100 G for one measurement
         self.rh = theory.hall_coefficient(db, dr)
 
+
 class DataPoint:
-    def __init__(self, current_setpoint, temp_setpoint):
+    def __init__(self, current_set_point, temp_set_point):
+        self.current = current_set_point
+        self.temp = temp_set_point
         self.thickness = None
-        self.current = current_setpoint
-        self.temp = temp_setpoint
         self.vdp = None
         self.hall = None
+        self.rho = None
+        self.r_hall = None
+        self.n = None
+        self.mu = None
 
+    def __str__(self):
+        if isinstance(self.temp, str):
+            return f'I = {self.current:.2e} A, T = {self.temp}: {self.rho} \u2126m'
+        else:
+            return f'I = {self.current:.2e} A, T = {self.temp:.1f} K: {self.rho} \u2126m'
+
+    def __repr__(self):
+        if isinstance(self.temp, str):
+            return f'I{self.current:.2e} T{self.temp}: R{self.rho.n:.3e}'
+        else:
+            return f'I{self.current:.2e} T{self.temp:.1f}: R{self.rho.n:.3e}'
+
+
+    def set_thickness(self, thickness):
+        self.thickness = thickness
+        self.recalculate()
+
+    def set_vdp(self, vdp: VdpData):
+        self.vdp = vdp
+        self.recalculate()
+
+    def set_hall(self, hall: HallData):
+        self.hall = hall
+        self.recalculate()
+
+    def recalculate(self):
+        if self.thickness is not None:
+            if self.vdp is not None:
+                self.rho = self.vdp.rs * self.thickness
+            if self.hall is not None:
+                self.r_hall = self.hall.rh * self.thickness
+                self.n = 1./(ec * self.r_hall)
+        if self.vdp is not None and self.hall is not None:
+            self.mu = self.hall.rh/self.vdp.rs
