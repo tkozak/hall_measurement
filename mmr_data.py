@@ -54,12 +54,11 @@ def load_csv_file(filename):
         i += 1
 
     # process data
-    data_list = []
+    data_list = hall_data.DataList(title, th)
     for k, set_point in enumerate(sp):
         data_point = hall_data.DataPoint(set_point['current'], set_point['temp'])
-        data_point.set_thickness(th)
-        data_point.set_vdp(hall_data.VdpData(vd[k]['current'], vd[k]['voltage']))
-        data_point.set_hall(hall_data.HallData(hd[k]['current'], hd[k]['voltage'], hd[k]['field']))
+        data_point.set_data(hall_data.VdpData(vd[k]['current'], vd[k]['voltage']),
+                            hall_data.HallData(hd[k]['current'], hd[k]['voltage'], hd[k]['field']))
         data_list.append(data_point)
 
     return data_list
