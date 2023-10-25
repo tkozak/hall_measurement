@@ -1,3 +1,5 @@
+import csv
+
 import numpy as np
 import theory
 from uncertainties import ufloat
@@ -65,13 +67,13 @@ class HallData:
         else:
             raise ValueError("Current array must have 2 rows")
 
-        dr_v = np.array([self.rc[0] - self.rc[1], self.rc[2] - self.rc[3]])
-        dr_n = 0.5 * (dr_v[0] + dr_v[1])  # average both resistance differences
-        dr = ufloat(dr_n, np.abs(dr_v[0] - dr_n))  # estimate error as difference between dr
+        self.dr_v = np.array([self.rc[0] - self.rc[1], self.rc[2] - self.rc[3]])
+        dr_n = 0.5 * (self.dr_v[0] + self.dr_v[1])  # average both resistance differences
+        self.dr = ufloat(dr_n, np.abs(self.dr_v[0] - dr_n))  # estimate error as difference between dr
         # perhaps too crude, as this is seldom equal, but the average seems to be quite reproducible
 
         db = ufloat((self.b[0] - self.b[1]) * 1e-4, 0.01 * np.sqrt(2))  # estimate error as 100 G for one measurement
-        self.rh = theory.sheet_hall_coefficient(db, dr)
+        self.rh = theory.sheet_hall_coefficient(db, self.dr)
 
 
 class DataPoint:
@@ -164,15 +166,93 @@ class DataList(list):
         for x in self:
             x.recalculate(self.thickness)
 
-    def to_file(self, filename, length_units='cm'):
+    def table_csv(self, filename, length_units='cm'):
         fl = length_unit_factor(length_units)
 
-        # print header
+        header1 = ['Temperature', 'Current', 'Sheet resistance', 'SR error',
+                   'Reduced Hall coefficient', 'RHC error',
+                   'Resistivity', 'R error',
+                   'Hall coefficient', 'HC error',
+                   'Density', 'D error',
+                   'Mobility', 'M error']
+        header2 = ['K', 'A', '\u2126', '\u2126', length_units+'\u00b2/C', length_units+'\u00b2/C',
+                   '\u2126'+length_units, '\u2126'+length_units, length_units+'\u00b3/C', length_units+'\u00b3/C',
+                   length_units+'\u207b\u00b3', length_units+'\u207b\u00b3', length_units+'\u00b2/Vs', length_units+'\u00b2/Vs']
+        with open(filename, 'w', encoding='utf8', newline='') as f:
+            w = csv.writer(f, delimiter=',')
+            w.writerow(['Name', self.name])
+            w.writerow(['Thickness', f'{self.thickness*1e9:.0f} nm'])
+            w.writerow(header1)
+            w.writerow(header2)
 
-        # print data
-        for x in self:
-            pass
+            # print data
+            for x in self:
+                if isinstance(x.temp, str):
+                    temp_str = 'RT'
+                else:
+                    temp_str = f'{x.temp:.1f}'
+                if x.current is not None:
+                    current_str = f'{x.current:.3e}'
+                else:
+                    current_str = '-'
 
+                data = [temp_str, current_str,
+                        f'{x.rs.n:.4e}', f'{x.rs.s:.1e}',
+                        f'{x.rh.n*fl**2:.4e}', f'{x.rh.s*fl**2:.1e}',
+                        f'{x.rho.n*fl:.4e}', f'{x.rho.s*fl:.1e}',
+                        f'{x.r_hall.n*fl**3:.4e}', f'{x.r_hall.s*fl**3:.1e}',
+                        f'{x.n.n/fl**3:.4e}', f'{x.n.s/fl**3:.1e}',
+                        f'{x.mu.n*fl**2:.4e}', f'{x.mu.s*fl**2:.1e}']
+                w.writerow(data)
+
+    def report_txt(self, filename, length_units='cm'):
+        with open(filename, 'w', encoding='utf8') as f:
+            f.write(f'Name: {self.name}\n')
+            f.write(f'Thickness: {self.thickness*1e9:.0f} nm\n\n')
+            for x in self:
+                if isinstance(x.temp, str):
+                    temp_str = 'RT'
+                else:
+                    temp_str = f'{x.temp:.1f}'
+                if x.current is not None:
+                    current_str = f'{x.current:.3e}'
+                else:
+                    current_str = '-'
+                f.write(f'T = {temp_str}, I = {current_str} A\n')
+                f.write('-------------------------\n')
+                if x.vdp is not None:
+                    f.write('    VDP:     R_12/43       R_34/21       R_23/14       R_41/32\n')
+                    f.write('      ')
+                    for rc in x.vdp.rc:
+                        f.write(f'{rc:14.4e}')
+                    f.write('\n')
+                    ra_str = f'{x.vdp.ra}'
+                    rb_str = f'{x.vdp.rb}'
+                    f.write('                               R_A                         R_B\n')
+                    f.write(' '*(34-len(ra_str)) + ra_str + ' '*(28-len(rb_str)) + rb_str+'\n')
+                    f.write('                               R_S\n')
+                    rs_str = f'{x.vdp.rs}'
+                    f.write(' '*(34-len(rs_str)) + rs_str + '\n\n')
+
+                if x.hall is not None:
+                    f.write('    Hall: R_13/24(+)    R_13/24(-)    R_24/31(+)    R_24/31(-) \n')
+                    f.write('      ')
+                    for rc in x.hall.rc:
+                        f.write(f'{rc:14.4e}')
+                    f.write('\n')
+                    f.write('                          dR_13/24                    dR_24/31\n')
+                    f.write('      ')
+                    for dr in x.hall.dr_v:
+                        f.write(f'{dr:28.4e}')
+                    f.write('\n')
+                    f.write('                                B+                          B-\n')
+                    f.write('      ')
+                    for b in x.hall.b:
+                        f.write(f'{b*1e-4:28.4f}')
+                    f.write('\n')
+                    f.write('                               r_H\n')
+                    rh_str = f'{x.hall.rh}'
+                    f.write(' ' * (34 - len(rh_str)) + rh_str + '\n\n')
 
 
 

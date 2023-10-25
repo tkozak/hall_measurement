@@ -1,0 +1,5 @@
+Name,CuO-03 - 11 October 2022-temp
+Thickness,220 nm
+Temperature,Current,Sheet resistance,SR error,Reduced Hall coefficient,RHC error,Resistivity,R error,Hall coefficient,HC error,Density,D error,Mobility,M error
+K,A,Ω,Ω,cm²/C,cm²/C,Ωcm,Ωcm,cm³/C,cm³/C,cm⁻³,cm⁻³,cm²/Vs,cm²/Vs
+RT,-,1.0415e+07,9.3e+03,5.9726e+06,1.7e+06,2.2913e+02,2.0e-01,1.3140e+02,3.7e+01,4.7501e+16,1.3e+16,5.7344e-01,1.6e-01
