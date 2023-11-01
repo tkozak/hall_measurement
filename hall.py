@@ -1,7 +1,5 @@
-import hall_data
 import mmr_data
 import argparse
-import os
 import glob
 
 
@@ -42,7 +40,7 @@ def main():
         data = data.collect_by_variable('current')
 
     data.recalculate()
-    data.table_csv(args.output_name + '_csv.txt', length_units=args.unit)
+    data.table_csv(args.output_name + '.csv', length_units=args.unit)
 
 
 if __name__ == "__main__":

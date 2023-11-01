@@ -1,5 +1,4 @@
 import csv
-
 import numpy as np
 import theory
 from uncertainties import ufloat
@@ -24,10 +23,10 @@ def mean2(vl):
     s1 = 0
     s2 = 0
     for v in vl:
-        s1 += v.n/v.s**2
-        s2 += 1/v.s**2
+        s1 += v.n / v.s ** 2
+        s2 += 1 / v.s ** 2
 
-    return ufloat(s1/s2, np.sqrt(1/s2))
+    return ufloat(s1 / s2, np.sqrt(1 / s2))
 
 
 class VdpData:
@@ -35,7 +34,7 @@ class VdpData:
         self.i = current
         self.u = voltage
 
-        if self.i.shape[0] == 2:   # symmetric current measurement
+        if self.i.shape[0] == 2:  # symmetric current measurement
             self.rc = np.squeeze(np.diff(self.u, axis=0) / np.diff(self.i, axis=0))  # resistance without dc offset
             self.offset = self.u[1, :] - self.rc * self.i[1, :]  # save dc offset
         else:
@@ -106,7 +105,7 @@ class DataPoint:
             s += 'V'
         if self.rh is not None:
             s += 'H'
-        return temp_str+current_str+':'+s
+        return temp_str + current_str + ':' + s
 
     def set_data(self, vdp: VdpData, hall: HallData):
         self.vdp = vdp
@@ -136,26 +135,41 @@ class DataList(list):
 
     def collect_by_variable(self, var):
         if var == 'temp':
-            x_list = [x.temp for x in self]
-            x_set = set([x.temp for x in self])
+            x_tol = 0.1
+            x_list = []
+            for x in self:
+                if type(x.temp) == str:
+                    x_list.append(x.temp)
+                else:
+                    x_list.append(round(x.temp, 0))
+            x_set = set(x_list)
         else:
-            ValueError('Unknown (not implemented) variable '+var)
+            ValueError('Unknown (not implemented) variable ' + var)
             return
-        new_list = DataList(self.name+'-'+var, self.thickness)
+        new_list = DataList(self.name + '-' + var, self.thickness)
         for xj in x_set:
             dp = DataPoint(None, xj)
             rs1 = []
             rh1 = []
             for i, xi in enumerate(x_list):
-                if xi == xj:
-                    rs1.append(self[i].rs.n)
-                    rh1.append(self[i].rh.n)
+                if type(xj) == str:
+                    if xi == xj:
+                        rs1.append(self[i].rs.n)
+                        rh1.append(self[i].rh.n)
+                else:
+                    if abs(xi - xj) < x_tol:
+                        rs1.append(self[i].rs.n)
+                        rh1.append(self[i].rh.n)
             rs1 = np.array(rs1)
             rh1 = np.array(rh1)
             if var == 'temp':
                 dp.set_results(ufloat(np.mean(rs1), np.std(rs1)),
                                ufloat(np.mean(rh1), np.std(rh1)))
             new_list.append(dp)
+
+        # sort
+        if var == 'temp':
+            new_list.sort(key=lambda z: z.temp)
         return new_list
 
     def set_thickness(self, thickness):
@@ -175,13 +189,15 @@ class DataList(list):
                    'Hall coefficient', 'HC error',
                    'Density', 'D error',
                    'Mobility', 'M error']
-        header2 = ['K', 'A', '\u2126', '\u2126', length_units+'\u00b2/C', length_units+'\u00b2/C',
-                   '\u2126'+length_units, '\u2126'+length_units, length_units+'\u00b3/C', length_units+'\u00b3/C',
-                   length_units+'\u207b\u00b3', length_units+'\u207b\u00b3', length_units+'\u00b2/Vs', length_units+'\u00b2/Vs']
+        header2 = ['K', 'A', '\u2126', '\u2126', length_units + '\u00b2/C', length_units + '\u00b2/C',
+                   '\u2126' + length_units, '\u2126' + length_units, length_units + '\u00b3/C',
+                   length_units + '\u00b3/C',
+                   length_units + '\u207b\u00b3', length_units + '\u207b\u00b3', length_units + '\u00b2/Vs',
+                   length_units + '\u00b2/Vs']
         with open(filename, 'w', encoding='utf8', newline='') as f:
             w = csv.writer(f, delimiter=',')
             w.writerow(['Name', self.name])
-            w.writerow(['Thickness', f'{self.thickness*1e9:.0f} nm'])
+            w.writerow(['Thickness', f'{self.thickness * 1e9:.0f} nm'])
             w.writerow(header1)
             w.writerow(header2)
 
@@ -198,17 +214,17 @@ class DataList(list):
 
                 data = [temp_str, current_str,
                         f'{x.rs.n:.4e}', f'{x.rs.s:.1e}',
-                        f'{x.rh.n*fl**2:.4e}', f'{x.rh.s*fl**2:.1e}',
-                        f'{x.rho.n*fl:.4e}', f'{x.rho.s*fl:.1e}',
-                        f'{x.r_hall.n*fl**3:.4e}', f'{x.r_hall.s*fl**3:.1e}',
-                        f'{x.n.n/fl**3:.4e}', f'{x.n.s/fl**3:.1e}',
-                        f'{x.mu.n*fl**2:.4e}', f'{x.mu.s*fl**2:.1e}']
+                        f'{x.rh.n * fl ** 2:.4e}', f'{x.rh.s * fl ** 2:.1e}',
+                        f'{x.rho.n * fl:.4e}', f'{x.rho.s * fl:.1e}',
+                        f'{x.r_hall.n * fl ** 3:.4e}', f'{x.r_hall.s * fl ** 3:.1e}',
+                        f'{x.n.n / fl ** 3:.4e}', f'{x.n.s / fl ** 3:.1e}',
+                        f'{x.mu.n * fl ** 2:.4e}', f'{x.mu.s * fl ** 2:.1e}']
                 w.writerow(data)
 
     def report_txt(self, filename, length_units='cm'):
         with open(filename, 'w', encoding='utf8') as f:
             f.write(f'Name: {self.name}\n')
-            f.write(f'Thickness: {self.thickness*1e9:.0f} nm\n\n')
+            f.write(f'Thickness: {self.thickness * 1e9:.0f} nm\n\n')
             for x in self:
                 if isinstance(x.temp, str):
                     temp_str = 'RT'
@@ -229,10 +245,10 @@ class DataList(list):
                     ra_str = f'{x.vdp.ra}'
                     rb_str = f'{x.vdp.rb}'
                     f.write('                               R_A                         R_B\n')
-                    f.write(' '*(34-len(ra_str)) + ra_str + ' '*(28-len(rb_str)) + rb_str+'\n')
+                    f.write(' ' * (34 - len(ra_str)) + ra_str + ' ' * (28 - len(rb_str)) + rb_str + '\n')
                     f.write('                               R_S\n')
                     rs_str = f'{x.vdp.rs}'
-                    f.write(' '*(34-len(rs_str)) + rs_str + '\n\n')
+                    f.write(' ' * (34 - len(rs_str)) + rs_str + '\n\n')
 
                 if x.hall is not None:
                     f.write('    Hall: R_13/24(+)    R_13/24(-)    R_24/31(+)    R_24/31(-) \n')
@@ -248,11 +264,8 @@ class DataList(list):
                     f.write('                                B+                          B-\n')
                     f.write('      ')
                     for b in x.hall.b:
-                        f.write(f'{b*1e-4:28.4f}')
+                        f.write(f'{b * 1e-4:28.4f}')
                     f.write('\n')
                     f.write('                               r_H\n')
                     rh_str = f'{x.hall.rh}'
                     f.write(' ' * (34 - len(rh_str)) + rh_str + '\n\n')
-
-
-
