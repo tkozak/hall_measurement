@@ -27,7 +27,10 @@ def load_csv_file(filename):
     while i < len(lines):
         if re.match('Thickness', lines[i]):
             t_str = lines[i].split(',')[1]
-            th = float(t_str[:-2]) * 1e-6  # thickness
+            try:
+                th = float(t_str[:-2]) * 1e-6  # thickness
+            except ValueError:  # possible empty line with no value - do nothing
+                pass
         if re.match('Point #', lines[i]) and re.match('Hall', lines[i - 1]):
             current, voltage = read_current_voltage_columns(lines[i + 1: i + 5])
             field_str_list = lines[i+6].split(',')

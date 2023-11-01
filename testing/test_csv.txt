@@ -1,0 +1,5 @@
+Name,AZO_135-07b - 27 October 2015-temp
+Thickness,251 nm
+Temperature,Current,Sheet resistance,SR error,Reduced Hall coefficient,RHC error,Resistivity,R error,Hall coefficient,HC error,Density,D error,Mobility,M error
+K,A,Ω,Ω,cm²/C,cm²/C,Ωcm,Ωcm,cm³/C,cm³/C,cm⁻³,cm⁻³,cm²/Vs,cm²/Vs
+RT,-,1.0675e+02,8.6e+00,-1.0115e+03,1.4e+02,2.6795e-03,2.2e-04,-2.5390e-02,3.6e-03,-2.4583e+20,3.5e+19,-9.4755e+00,1.6e+00
