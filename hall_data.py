@@ -109,9 +109,11 @@ class DataPoint:
 
     def set_data(self, vdp: VdpData, hall: HallData):
         self.vdp = vdp
-        self.rs = vdp.rs
+        if self.vdp is not None:
+            self.rs = vdp.rs
         self.hall = hall
-        self.rh = hall.rh
+        if self.hall is not None:
+            self.rh = hall.rh
 
     def set_results(self, rs, rh):
         self.rs = rs
@@ -154,23 +156,37 @@ class DataList(list):
             for i, xi in enumerate(x_list):
                 if type(xj) == str:
                     if xi == xj:
-                        rs1.append(self[i].rs.n)
-                        rh1.append(self[i].rh.n)
+                        if self[i].rs is not None:
+                            rs1.append(self[i].rs.n)
+                        if self[i].rh is not None:
+                            rh1.append(self[i].rh.n)
                 else:
                     if abs(xi - xj) < x_tol:
-                        rs1.append(self[i].rs.n)
-                        rh1.append(self[i].rh.n)
+                        if self[i].rs is not None:
+                            rs1.append(self[i].rs.n)
+                        if self[i].rh is not None:
+                            rh1.append(self[i].rh.n)
             rs1 = np.array(rs1)
             rh1 = np.array(rh1)
+            if rh1.size > 0:
+                rh = ufloat(np.mean(rh1), np.std(rh1))
+            else:
+                rh = None
+            if rs1.size > 0:
+                rs = ufloat(np.mean(rs1), np.std(rs1))
+            else:
+                rs = None
             if var == 'temp':
-                dp.set_results(ufloat(np.mean(rs1), np.std(rs1)),
-                               ufloat(np.mean(rh1), np.std(rh1)))
+                if rh is not None:
+                    if rh.s > rh.n:
+                        rh = ufloat(np.mean(rh1), 0.8*np.mean(rh1))
+                dp.set_results(rs, rh)
             new_list.append(dp)
-
         # sort
         if var == 'temp':
             new_list.sort(key=lambda z: z.temp)
         return new_list
+
 
     def set_thickness(self, thickness):
         self.thickness = thickness
@@ -183,17 +199,21 @@ class DataList(list):
     def table_csv(self, filename, length_units='cm'):
         fl = length_unit_factor(length_units)
 
-        header1 = ['Temperature', 'Current', 'Sheet resistance', 'SR error',
-                   'Reduced Hall coefficient', 'RHC error',
-                   'Resistivity', 'R error',
-                   'Hall coefficient', 'HC error',
-                   'Density', 'D error',
-                   'Mobility', 'M error']
-        header2 = ['K', 'A', '\u2126', '\u2126', length_units + '\u00b2/C', length_units + '\u00b2/C',
-                   '\u2126' + length_units, '\u2126' + length_units, length_units + '\u00b3/C',
+        header1 = ['Temperature', 'Current']
+        header2 = ['K', 'A']
+        if self[0].rs is not None:
+            header1.extend(['Sheet resistance', 'SR error', 'Resistivity', 'R error'])
+            header2.extend(['\u2126', '\u2126', '\u2126' + length_units, '\u2126' + length_units])
+
+        if self[0].rh is not None:
+            header1.extend(['Reduced Hall coefficient', 'RHC error','Hall coefficient', 'HC error','Density', 'D error',
+                   'Mobility', 'M error'])
+            header2.extend([length_units + '\u00b2/C', length_units + '\u00b2/C', length_units + '\u00b3/C',
                    length_units + '\u00b3/C',
                    length_units + '\u207b\u00b3', length_units + '\u207b\u00b3', length_units + '\u00b2/Vs',
-                   length_units + '\u00b2/Vs']
+                   length_units + '\u00b2/Vs'])
+
+
         with open(filename, 'w', encoding='utf8', newline='') as f:
             w = csv.writer(f, delimiter=',')
             w.writerow(['Name', self.name])
@@ -212,13 +232,15 @@ class DataList(list):
                 else:
                     current_str = '-'
 
-                data = [temp_str, current_str,
-                        f'{x.rs.n:.4e}', f'{x.rs.s:.1e}',
-                        f'{x.rh.n * fl ** 2:.4e}', f'{x.rh.s * fl ** 2:.1e}',
-                        f'{x.rho.n * fl:.4e}', f'{x.rho.s * fl:.1e}',
+                data = [temp_str, current_str]
+                if x.rs is not None:
+                    data.extend([f'{x.rs.n:.4e}', f'{x.rs.s:.1e}', f'{x.rho.n * fl:.4e}', f'{x.rho.s * fl:.1e}'])
+                if x.rh is not None:
+                    data.extend([f'{x.rh.n * fl ** 2:.4e}', f'{x.rh.s * fl ** 2:.1e}',
                         f'{x.r_hall.n * fl ** 3:.4e}', f'{x.r_hall.s * fl ** 3:.1e}',
                         f'{x.n.n / fl ** 3:.4e}', f'{x.n.s / fl ** 3:.1e}',
-                        f'{x.mu.n * fl ** 2:.4e}', f'{x.mu.s * fl ** 2:.1e}']
+                        f'{x.mu.n * fl ** 2:.4e}', f'{x.mu.s * fl ** 2:.1e}'])
+                    header1
                 w.writerow(data)
 
     def report_txt(self, filename, length_units='cm'):

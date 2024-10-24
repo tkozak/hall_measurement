@@ -60,8 +60,12 @@ def load_csv_file(filename):
     data_list = hall_data.DataList(title, th)
     for k, set_point in enumerate(sp):
         data_point = hall_data.DataPoint(set_point['current'], set_point['temp'])
-        data_point.set_data(hall_data.VdpData(vd[k]['current'], vd[k]['voltage']),
-                            hall_data.HallData(hd[k]['current'], hd[k]['voltage'], hd[k]['field']))
+        try:
+            data_point.set_data(hall_data.VdpData(vd[k]['current'], vd[k]['voltage']),
+                                hall_data.HallData(hd[k]['current'], hd[k]['voltage'], hd[k]['field']))
+        except IndexError:
+            data_point.set_data(hall_data.VdpData(vd[k]['current'], vd[k]['voltage']), None)
+
         data_list.append(data_point)
 
     return data_list
