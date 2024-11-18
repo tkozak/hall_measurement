@@ -15,9 +15,11 @@ def vdp_function_prime(rs, ra, rb):
 
 def sheet_resistance_vdp(ra, rb):
     r0 = np.pi * (ra + rb) / (2 * np.log(2))
-
-    rs_v = opt.newton(vdp_function, r0.n, fprime=vdp_function_prime, args=(ra.n, rb.n))
-    rs = ufloat(rs_v, r0.s)
+    if ra.n < 0 or rb.n < 0:  # cannot solve for rs if either is negative
+        rs = ufloat(np.nan, 0.0)
+    else:
+        rs_v = opt.newton(vdp_function, r0.n, fprime=vdp_function_prime, args=(ra.n, rb.n))
+        rs = ufloat(rs_v, r0.s)
     return rs
 
 

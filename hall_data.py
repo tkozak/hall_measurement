@@ -124,7 +124,10 @@ class DataPoint:
             self.rho = theory.resistivity(self.rs, thickness)
         if self.rh is not None:
             self.r_hall = theory.hall_coefficient(self.rh, thickness)
-            self.n = theory.density(self.rh, thickness)
+            if self.rh.n == 0:
+                self.n = ufloat(np.nan, 0.)
+            else:
+                self.n = theory.density(self.rh, thickness)
         if self.rs is not None and self.rh is not None:
             self.mu = theory.mobility(self.rs, self.rh)
 
